@@ -1,6 +1,5 @@
 <Ui xmlns='http://www.blizzard.com/wow/ui/'>
 	<Script file='afkcamera.lua' />
-	<Script file='armory.lua' />
 	<Script file='combat.lua' />
 	<Script file='currency.lua' />
 	<Script file='extraquestbutton.lua' />
