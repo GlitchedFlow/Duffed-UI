@@ -33,46 +33,48 @@ D['ClassTimer'] = function(self)
 		local auraTypes = { 'HELPFUL', 'HARMFUL' }
 
 		-- private
-		local CheckFilter = function(self, id, caster, filter)
-			if (filter == nil) then return false end
-			local byPlayer = caster == 'player' or caster == 'pet' or caster == 'vehicle'
-			for _, v in ipairs(filter) do
-				if (v.id == id and (v.castByAnyone or byPlayer)) then return v end
-			end
-			return false
-		end
-
-		local CheckUnit = function(self, unit, filter, result)
+		local CheckUnit = function(self, unit, result)
 			if (not UnitExists(unit)) then return 0 end
-			local unitIsFriend = UnitIsFriend('player', unit)
-			for _, auraType in ipairs(auraTypes) do
-				local isDebuff = auraType == 'HARMFUL'
-
-				for index = 1, 40 do
-					local name, texture, stacks, _, duration, expirationTime, caster, _, _, spellId = UnitAura(unit, index, auraType)
-					if (name == nil) then break end
-					local filterInfo = CheckFilter(self, spellId, caster, filter)
-					if (filterInfo and (filterInfo.unitType ~= 1 or unitIsFriend) and (filterInfo.unitType ~= 2 or not unitIsFriend)) then
-						filterInfo.name = name
-						filterInfo.texture = texture
-						filterInfo.duration = duration
-						filterInfo.expirationTime = expirationTime
-						filterInfo.stacks = stacks
-						filterInfo.unit = unit
-						filterInfo.isDebuff = isDebuff
-						table.insert(result, filterInfo)
-					end
-				end
+			auraType = auraTypes[1]
+			if not self.isBuffsSource then
+				auraType = auraTypes[2]
 			end
+
+			index = 1
+			AuraUtil.ForEachAura(unit, auraType, 40, function(name, texture, stacks, _, duration, expirationTime, caster, _, _, spellId)
+				local aura = {}
+				aura.castSpellId = spellId
+				aura.name = name
+				aura.texture = texture
+				aura.duration = duration
+				aura.expirationTime = expirationTime
+				aura.stacks = stacks
+				aura.unit = unit
+				aura.isDebuff = not self.isBuffsSource
+				aura.defaultColor = self.defaultColor
+				aura.debuffColor = self.debuffColor
+				aura.caster = caster
+				aura.id = index
+				index = index + 1
+				table.insert(result, aura)
+			end)
 		end
 
 		-- public
 		local Update = function(self)
-			local result = self.table
-			for index = 1, #result do table.remove(result) end
-			CheckUnit(self, self.unit, self.filter, result)
-			if (self.includePlayer) then CheckUnit(self, 'player', self.playerFilter, result) end
-			self.table = result
+			if isBuffsSource then
+				-- update buffs
+				local buffs = self.buffs
+				for index = 1, #buffs do table.remove(buffs) end
+				CheckUnit(self, self.unit, buffs, true)
+				self.buffs = buffs
+			else
+				-- update debuffs
+				local debuffs = self.debuffs
+				for index = 1, #debuffs do table.remove(debuffs) end
+				CheckUnit(self, self.unit, debuffs, false)
+				self.debuffs = debuffs
+			end
 		end
 
 		local SetSortDirection = function(self, descending) self.sortDirection = descending end
@@ -81,63 +83,45 @@ D['ClassTimer'] = function(self)
 		local Sort = function(self)
 			local direction = self.sortDirection
 			local time = GetTime()
+			local table = self.GetTable(self)
 			local sorted
 			repeat
 				sorted = true
-				for key, value in pairs(self.table) do
+				for key, value in pairs(table) do
 					local nextKey = key + 1
-					local nextValue = self.table[ nextKey ]
+					local nextValue = table[ nextKey ]
 					if (nextValue == nil) then break end
 					local currentRemaining = value.expirationTime == 0 and 4294967295 or math.max(value.expirationTime - time, 0)
 					local nextRemaining = nextValue.expirationTime == 0 and 4294967295 or math.max(nextValue.expirationTime - time, 0)
 					if ((direction and currentRemaining < nextRemaining) or (not direction and currentRemaining > nextRemaining)) then
-						self.table[ key ] = nextValue
-						self.table[ nextKey ] = value
+						table[ key ] = nextValue
+						table[ nextKey ] = value
 						sorted = false
 					end
 				end
 			until (sorted == true)
 		end
 
-		local Get = function(self) return self.table end
-		local Count = function(self) return #self.table end
-
-		local AddFilter = function(self, filter, defaultColor, debuffColor)
-			if (filter == nil) then return end
-			for _, v in pairs(filter) do
-				local clone = { }
-				clone.id = v.id
-				clone.castByAnyone = v.castByAnyone
-				clone.color = v.color
-				clone.unitType = v.unitType
-				clone.castSpellId = v.castSpellId
-				clone.defaultColor = defaultColor
-				clone.debuffColor = debuffColor
-				table.insert(self.filter, clone)
-			end
+		local Get = function(self) 
+			return self.GetTable(self)
 		end
 
-		local AddPlayerFilter = function(self, filter, defaultColor, debuffColor)
-			if (filter == nil) then return end
-			for _, v in pairs(filter) do
-				local clone = { }
-				clone.id = v.id
-				clone.castByAnyone = v.castByAnyone
-				clone.color = v.color
-				clone.unitType = v.unitType
-				clone.castSpellId = v.castSpellId
-				clone.defaultColor = defaultColor
-				clone.debuffColor = debuffColor
-				table.insert(self.playerFilter, clone)
-			end
+		local Count = function(self) 
+			return #self.GetTable(self)
 		end
 
 		local GetUnit = function(self) return self.unit end
-		local GetIncludePlayer = function(self) return self.includePlayer end
-		local SetIncludePlayer = function(self, value) self.includePlayer = value end
+
+		local GetTable = function(self) 
+			if isBuffsSource then 
+				return self.buffs 
+			else 
+				return self.debuffs
+			end
+		end
 
 		-- constructor
-		CreateUnitAuraDataSource = function(unit)
+		CreateUnitAuraDataSource = function(unit, defaultColor, debuffColor, isBuffsSource)
 			local result = {}
 			result.Sort = Sort
 			result.Update = Update
@@ -145,16 +129,14 @@ D['ClassTimer'] = function(self)
 			result.Count = Count
 			result.SetSortDirection = SetSortDirection
 			result.GetSortDirection = GetSortDirection
-			result.AddFilter = AddFilter
-			result.AddPlayerFilter = AddPlayerFilter
 			result.GetUnit = GetUnit
-			result.SetIncludePlayer = SetIncludePlayer
-			result.GetIncludePlayer = GetIncludePlayer
 			result.unit = unit
-			result.includePlayer = false
-			result.filter = {}
-			result.playerFilter = {}
-			result.table = {}
+			result.buffs = {}
+			result.debuffs = {}
+			result.defaultColor = defaultColor
+			result.debuffColor = debuffColor
+			result.isBuffsSource = isBuffsSource
+			result.GetTable = GetTable
 			return result
 		end
 	end
@@ -270,16 +252,44 @@ D['ClassTimer'] = function(self)
 				end
 			end
 
+			local SetUnit = function(self, unit) self.unit = unit end
+			local SetAuraId = function(self, auraId) self.auraId = auraId end
+
 			local SetAuraInfo = function(self, auraInfo)
 				self:SetName(auraInfo.name)
 				self:SetIcon(auraInfo.texture)
 				self:SetTime(auraInfo.expirationTime, auraInfo.duration)
 				self:SetStacks(auraInfo.stacks)
 				self:SetCastSpellId(auraInfo.castSpellId)
+				self:SetUnit(auraInfo.unit)
+				self:SetAuraId(auraInfo.id)
+			end
+
+			local function UpdateTooltip(self)
+				if(GameTooltip:IsForbidden()) then return end
+			
+				if self.isBuff then
+					GameTooltip:SetUnitBuff(self.unit, self.auraId)
+				else
+					GameTooltip:SetUnitDebuff(self.unit, self.auraId)
+				end
+			end
+			
+			local function onEnter(self)
+				if(GameTooltip:IsForbidden() or not self:IsVisible()) then return end
+			
+				GameTooltip:SetOwner(self, 'ANCHOR_CURSOR')
+				self:UpdateTooltip()
+			end
+			
+			local function onLeave()
+				if(GameTooltip:IsForbidden()) then return end
+			
+				GameTooltip:Hide()
 			end
 
 			-- constructor
-			CreateAuraBar = function(parent)
+			CreateAuraBar = function(parent, isBuffAura)
 				local result = CreateFrame('Frame', nil, parent, nil)
 				local icon = CreateFramedTexture(result, 'ARTWORK')
 				icon:SetTexCoord(.15, .85, .15, .85)
@@ -349,9 +359,21 @@ D['ClassTimer'] = function(self)
 				result.SetTime = SetTime
 				result.SetName = SetName
 				result.SetStacks = SetStacks
+				result.SetUnit = SetUnit
+				result.SetAuraId = SetAuraId
 				result.SetAuraInfo = SetAuraInfo
 				result.SetColor = SetColor
 				result.SetCastSpellId = SetCastSpellId
+
+				result.UpdateTooltip = UpdateTooltip
+
+				result.unit = {}
+				result.auraId = {}
+				result.isBuff = isBuffAura
+
+				result:SetScript('OnEnter', onEnter)
+				result:SetScript('OnLeave', onLeave)
+
 				return result
 			end
 		end
@@ -360,7 +382,7 @@ D['ClassTimer'] = function(self)
 		local SetAuraBar = function(self, index, auraInfo)
 			local line = self.lines[ index ]
 			if (line == nil) then
-				line = CreateAuraBar(self)
+				line = CreateAuraBar(self, self.dataSource.isBuffsSource)
 				if (index == 1) then
 					line:Point('TOPLEFT', self, 'BOTTOMLEFT', 13, BAR_HEIGHT)
 					line:Point('BOTTOMRIGHT', self, 'BOTTOMRIGHT', 0, 0)
@@ -383,7 +405,7 @@ D['ClassTimer'] = function(self)
 		end
 
 		local function OnUnitAura(self, unit)
-			if (unit ~= self.unit and (self.dataSource:GetIncludePlayer() == false or unit ~= 'player')) then return end
+			if (unit ~= self.unit) then return end
 			self:Render()
 		end
 
@@ -408,14 +430,23 @@ D['ClassTimer'] = function(self)
 			dataSource:Update()
 			dataSource:Sort()
 			local count = dataSource:Count()
-			for index, auraInfo in ipairs(dataSource:Get()) do SetAuraBar(self, index, auraInfo) end
-			for index = count + 1, 80 do
+			local runningCount = 0
+			for index, auraInfo in ipairs(dataSource:Get()) do 
+				if (not C['classtimer']['showpermabuffs'] and (auraInfo.expirationTime > 0 and auraInfo.duration > 0)) then
+					runningCount = runningCount + 1
+					SetAuraBar(self, runningCount, auraInfo) 
+				elseif (C['classtimer']['showpermabuffs']) then
+					runningCount = runningCount + 1
+					SetAuraBar(self, runningCount, auraInfo) 
+				end
+			end
+			for index = runningCount + 1, 80 do
 				local line = self.lines[ index ]
 				if (line == nil or not line:IsShown()) then break end
 				line:Hide()
 			end
-			if (count > 0) then
-				self:SetHeight((BAR_HEIGHT + BAR_SPACING) * count - BAR_SPACING)
+			if (runningCount > 0) then
+				self:SetHeight((BAR_HEIGHT + BAR_SPACING) * runningCount - BAR_SPACING)
 				self:Show()
 			else
 				self:Hide()
@@ -463,50 +494,58 @@ D['ClassTimer'] = function(self)
 		end
 	end
 
-	local _, playerClass = UnitClass('player')
-	local classFilter = D['ClassFilter'][ playerClass ]
+	if C['classtimer']['buffsenable'] then
+		local playerDataSource = CreateUnitAuraDataSource('player', PLAYER_BAR_COLOR, PLAYER_DEBUFF_COLOR, true)
 
-	local targetDataSource = CreateUnitAuraDataSource('target')
-	local playerDataSource = CreateUnitAuraDataSource('player')
-	local trinketDataSource = CreateUnitAuraDataSource('player')
+		playerDataSource:SetSortDirection(SORT_DIRECTION)
 
-	targetDataSource:SetSortDirection(SORT_DIRECTION)
-	playerDataSource:SetSortDirection(SORT_DIRECTION)
-	trinketDataSource:SetSortDirection(SORT_DIRECTION)
-
-	if classFilter then
-		targetDataSource:AddFilter(classFilter.target, TARGET_BAR_COLOR, TARGET_DEBUFF_COLOR)
-		playerDataSource:AddFilter(classFilter.player, PLAYER_BAR_COLOR, PLAYER_DEBUFF_COLOR)
-		trinketDataSource:AddFilter(classFilter.procs, TRINKET_BAR_COLOR)
-	end
-	trinketDataSource:AddFilter(D['TrinketFilter'], TRINKET_BAR_COLOR)
-
-	local playerFrame = CreateAuraBarFrame(playerDataSource, self.Health)
-	if layout == 3 then
-		playerFrame:Point('BOTTOMLEFT', self.Health, 'TOPLEFT', 0, 25)
-		playerFrame:Point('BOTTOMRIGHT', self.Health, 'TOPRIGHT', 0, 25)
-	else
-		playerFrame:Point('BOTTOMLEFT', self.Health, 'TOPLEFT', 0, 7)
-		playerFrame:Point('BOTTOMRIGHT', self.Health, 'TOPRIGHT', 0, 7)
-	end
-
-	local trinketFrame = CreateAuraBarFrame(trinketDataSource, self.Health)
-	trinketFrame:Point('BOTTOMLEFT', playerFrame, 'TOPLEFT', 0, 5)
-	trinketFrame:Point('BOTTOMRIGHT', playerFrame, 'TOPRIGHT', 0, 5)
-
-	if C['classtimer']['debuffsenable'] then
-		local targetFrame = CreateAuraBarFrame(targetDataSource, self.Health)
-		if C['classtimer']['targetdebuff'] then
-			local debuffMover = CreateFrame('Frame', 'DebuffMover', UIParent)
-			debuffMover:SetSize(218, 15)
-			debuffMover:SetPoint('BOTTOM', UIParent, 'BOTTOM', 340, 380)
-			move:RegisterFrame(debuffMover)
-
-			targetFrame:Point('BOTTOMLEFT', DebuffMover, 'TOPLEFT', 0, 5)
-			targetFrame:Point('BOTTOMRIGHT', DebuffMover, 'TOPRIGHT', 0, 5)
+		local playerFrame = CreateAuraBarFrame(playerDataSource, self.Health)
+		local playerBuffMover = CreateFrame('Frame', 'PlayerBuffMover', UIParent)
+		playerBuffMover:SetSize(218, 15)
+		
+		if layout == 3 then
+			playerBuffMover:SetPoint('BOTTOM', self.Health, 'BOTTOM', 0, 25)
+			playerFrame:Point('BOTTOMLEFT', playerBuffMover, 'TOPLEFT', 0, 25)
+			playerFrame:Point('BOTTOMRIGHT', playerBuffMover, 'TOPRIGHT', 0, 25)
 		else
-			targetFrame:Point('BOTTOMLEFT', trinketFrame, 'TOPLEFT', 0, 5)
-			targetFrame:Point('BOTTOMRIGHT', trinketFrame, 'TOPRIGHT', 0, 5)
+			playerBuffMover:SetPoint('BOTTOM', self.Health, 'BOTTOM', 0, 7)
+			playerFrame:Point('BOTTOMLEFT', playerBuffMover, 'TOPLEFT', 0, 7)
+			playerFrame:Point('BOTTOMRIGHT', playerBuffMover, 'TOPRIGHT', 0, 7)
 		end
+
+		move:RegisterFrame(playerBuffMover)
+	end
+	if C['classtimer']['debuffsenable'] then
+		local playerDebuffDataSource = CreateUnitAuraDataSource('player', TARGET_BAR_COLOR, TARGET_DEBUFF_COLOR, false)
+		playerDebuffDataSource:SetSortDirection(SORT_DIRECTION)
+
+		local playerDebuffFrame = CreateAuraBarFrame(playerDebuffDataSource, self.Health)
+		local playerDebuffMover = CreateFrame('Frame', 'PlayerDebuffMover', UIParent)
+		playerDebuffMover:SetSize(218, 15)
+
+		if layout == 3 then
+			playerDebuffMover:SetPoint('BOTTOM', self.Health, 'BOTTOM', 0, 25)
+			playerDebuffFrame:Point('TOPLEFT', playerDebuffMover, 'BOTTOMLEFT', 0, 25)
+			playerDebuffFrame:Point('TOPRIGHT', playerDebuffMover, 'BOTTOMRIGHT', 0, 25)
+		else
+			playerDebuffMover:SetPoint('BOTTOM', self.Health, 'BOTTOM', 0, 7)
+			playerDebuffFrame:Point('TOPLEFT', playerDebuffMover, 'BOTTOMLEFT', 0, 7)
+			playerDebuffFrame:Point('TOPRIGHT', playerDebuffMover, 'BOTTOMRIGHT', 0, 7)
+		end
+
+		move:RegisterFrame(playerDebuffMover)
+	end
+	if C['classtimer']['targetdebuff'] then
+		local targetDataSource = CreateUnitAuraDataSource('target', TARGET_BAR_COLOR, TARGET_DEBUFF_COLOR, false)
+		targetDataSource:SetSortDirection(SORT_DIRECTION)
+
+		local targetFrame = CreateAuraBarFrame(targetDataSource, self.Health)
+		local debuffMover = CreateFrame('Frame', 'DebuffMover', UIParent)
+		debuffMover:SetSize(218, 15)
+		debuffMover:SetPoint('BOTTOM', UIParent, 'BOTTOM', 340, 380)
+		move:RegisterFrame(debuffMover)
+
+		targetFrame:Point('BOTTOMLEFT', DebuffMover, 'TOPLEFT', 0, 5)
+		targetFrame:Point('BOTTOMRIGHT', DebuffMover, 'TOPRIGHT', 0, 5)
 	end
 end

@@ -462,6 +462,14 @@ DuffedUIConfig['enUS'] = {
 		['separatorcolor'] = {
 			['Name'] = 'Separator color',
 		},
+
+		['buffsenable'] = {
+			['Name'] = 'Enable buffs',
+		},
+
+		['showpermabuffs'] = {
+			['Name'] = 'Enable perma Buffs',
+		},
 		
 		['debuffsenable'] = {
 		 ['Name'] = 'Enable debuffs',

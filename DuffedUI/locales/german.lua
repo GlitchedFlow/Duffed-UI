@@ -136,6 +136,8 @@ if D['Client'] == 'deDE' then
 		['ghost'] = 'GEIST',
 		['lowmana'] = 'Wenig Mana',
 		['threat1'] = 'Bedrohung auf aktuellem Ziel:',
+		['damage'] = 'Schaden',
+		['dps'] = 'SPS',
 		['wrath'] = 'Zorn',
 		['starfire'] = 'Sternenfeuer',
 	}

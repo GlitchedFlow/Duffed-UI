@@ -135,6 +135,8 @@ L['uf'] = {
 	['ghost'] = 'GHOST',
 	['lowmana'] = 'LOW MANA',
 	['threat1'] = 'Threat on current target:',
+	['damage'] = 'Damage',
+	['dps'] = 'DPS',
 	['wrath'] = 'Wrath',
 	['starfire'] = 'Starfire',
 }

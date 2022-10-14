@@ -462,6 +462,14 @@ DuffedUIConfig['ptBR'] = {
 		['separatorcolor'] = {
 			['Name'] = 'Separator color',
 		},
+
+		['buffsenable'] = {
+			['Name'] = 'Enable buffs',
+		},
+
+		['showpermabuffs'] = {
+			['Name'] = 'Enable perma buffs',
+		},
 		
 		['debuffsenable'] = {
 		 ['Name'] = 'Enable debuffs',
