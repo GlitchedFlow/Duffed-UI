@@ -7,12 +7,6 @@ function ab:CreatePetBar()
 	local pet = DuffedUIPetBar
 	local PetSize = D['petbuttonsize']
 	local Spacing = D['buttonspacing']
-	local PetActionBarFrame = PetActionBarFrame
-	local PetActionBar_UpdateCooldowns = PetActionBar_UpdateCooldowns
-
-	PetActionBarFrame:EnableMouse(0)
-	PetActionBarFrame:ClearAllPoints()
-	--PetActionBarFrame:SetParent(hide)
 
 	for i = 1, NUM_PET_ACTION_SLOTS do
 		local Button = _G['PetActionButton'..i]
@@ -44,7 +38,6 @@ function ab:CreatePetBar()
 		pet['Button'..i] = Button
 	end
 
-	hooksecurefunc('PetActionBar_Update', ab.UpdatePetBar)
 	ab:SkinPetButtons()
 	RegisterStateDriver(pet, 'visibility', '[@pet,exists,nopossessbar]show;hide')
 end

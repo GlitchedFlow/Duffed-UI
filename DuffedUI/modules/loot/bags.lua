@@ -671,6 +671,7 @@ function Stuffing:BagFrameSlotNew(p, slot)
 			SetItemButtonTextureVertexColor(ret.frame, 1.0, 1.0, 1.0)
 		end
 	else
+		print(p)
 		ret.frame = CreateFrame('ItemButton', 'StuffingFBag' .. slot .. 'Slot', p, 'BagSlotButtonTemplate')
 		Mixin(ret.frame, BackdropTemplateMixin)
 

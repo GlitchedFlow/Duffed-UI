@@ -55,17 +55,18 @@ local function SetChatStyle(frame)
 	tab.SetAlpha = UIFrameFadeRemoveFrame
 
 	if not C['chat']['lbackground'] and C['chat']['rbackground'] then
-		_G[chat..'TabText']:Hide()
-		tab:HookScript('OnEnter', function() _G[chat..'TabText']:Show() end)
-		tab:HookScript('OnLeave', function() _G[chat..'TabText']:Hide() end)
+		-- _G[chat..'TabText']:Hide()
+		-- tab:HookScript('OnEnter', function() _G[chat..'TabText']:Show() end)
+		-- tab:HookScript('OnLeave', function() _G[chat..'TabText']:Hide() end)
 	end
 
-	_G[chat..'TabText']:SetTextColor(unpack(C['media']['datatextcolor1']))
-	_G[chat..'TabText'].SetTextColor = D['Dummy']
-	_G[chat..'TabText']:SetFont(C['media']['font'], 11)
+	
+	-- _G[chat..'TabText']:SetTextColor(unpack(C['media']['datatextcolor1']))
+	-- _G[chat..'TabText'].SetTextColor = D['Dummy']
+	-- _G[chat..'TabText']:SetFont(C['media']['font'], 11)
 	if id == 4 then
-		_G[chat..'TabText']:ClearAllPoints()
-		_G[chat..'TabText']:SetPoint('CENTER', _G[chat..'Tab'], 0, -4)
+		-- _G[chat..'TabText']:ClearAllPoints()
+		-- _G[chat..'TabText']:SetPoint('CENTER', _G[chat..'Tab'], 0, -4)
 	end
 
 	_G[chat]:SetClampRectInsets(0, 0, 0, 0)
@@ -73,8 +74,8 @@ local function SetChatStyle(frame)
 
 	_G[chat]:SetFading(C['chat']['fading'])
 
-	_G[chat]:SetMinResize(371, 114)
-	_G[chat]:SetMinResize(D.InfoLeftRightWidth + 1, 114)
+	_G[chat]:SetResizeBounds(371, 114)
+	_G[chat]:SetResizeBounds(D.InfoLeftRightWidth + 1, 114)
 
 	_G[chat..'EditBox']:ClearAllPoints()
 	_G[chat..'EditBox']:Point('TOPLEFT', DuffedUIInfoLeft, 2, -2)
@@ -82,21 +83,17 @@ local function SetChatStyle(frame)
 
 	for j = 1, #CHAT_FRAME_TEXTURES do _G[chat..CHAT_FRAME_TEXTURES[j]]:SetTexture(nil) end
 
-	_G[format('ChatFrame%sTabLeft', id)]:Kill()
-	_G[format('ChatFrame%sTabMiddle', id)]:Kill()
-	_G[format('ChatFrame%sTabRight', id)]:Kill()
+	tab.Left:Kill()
+	tab.Middle:Kill()
+	tab.Right:Kill()
 
-	_G[format('ChatFrame%sTabSelectedLeft', id)]:Kill()
-	_G[format('ChatFrame%sTabSelectedMiddle', id)]:Kill()
-	_G[format('ChatFrame%sTabSelectedRight', id)]:Kill()
+	tab.ActiveLeft:Kill()
+	tab.ActiveMiddle:Kill()
+	tab.ActiveRight:Kill()
 	
-	_G[format('ChatFrame%sTabHighlightLeft', id)]:Kill()
-	_G[format('ChatFrame%sTabHighlightMiddle', id)]:Kill()
-	_G[format('ChatFrame%sTabHighlightRight', id)]:Kill()
-
-	_G[format('ChatFrame%sTabSelectedLeft', id)]:Kill()
-	_G[format('ChatFrame%sTabSelectedMiddle', id)]:Kill()
-	_G[format('ChatFrame%sTabSelectedRight', id)]:Kill()
+	tab.HighlightLeft:Kill()
+	tab.HighlightMiddle:Kill()
+	tab.HighlightRight:Kill()
 
 	_G[format('ChatFrame%sButtonFrameMinimizeButton', id)]:Kill()
 	_G[format('ChatFrame%sButtonFrame', id)]:Kill()

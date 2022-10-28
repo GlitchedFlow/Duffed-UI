@@ -22,7 +22,6 @@ function Module:InitializeTalkingHead()
 	content.ignoreFramePositionManager = true
 
 	UIParent:UnregisterEvent('TALKINGHEAD_REQUESTED')
-	UIPARENT_MANAGED_FRAME_POSITIONS['TalkingHeadFrame'] = nil
 
 	local AlertFrame = _G.AlertFrame
 	for index, alertFrameSubSystem in ipairs(AlertFrame.alertFrameSubSystems) do

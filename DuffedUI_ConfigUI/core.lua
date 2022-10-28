@@ -1271,7 +1271,6 @@ do
 		local continuey = continue:GetHeight()
 		local config = DuffedUIConfigUI
 		local interface = GameMenuButtonUIOptions
-		local keybinds = GameMenuButtonKeybindings
 
 		menu:SetHeight(menuy + continuey)
 
@@ -1295,7 +1294,5 @@ do
 			end
 			HideUIPanel(GameMenuFrame)
 			end)
-		keybinds:ClearAllPoints()
-		keybinds:Point('TOP', button, 'BOTTOM', 0, -1)
 	end)
 end

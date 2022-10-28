@@ -31,9 +31,6 @@ function ab:DisableBlizzard()
 	ActionBarButtonEventsFrame:UnregisterEvent('ACTIONBAR_SHOWGRID')
 	ActionBarButtonEventsFrame:UnregisterEvent('ACTIONBAR_HIDEGRID')
 	ActionBarButtonEventsFrame:UnregisterEvent('UPDATE_BINDINGS')
-	PetActionBarFrame:UnregisterEvent('PET_BAR_SHOWGRID')
-	PetActionBarFrame:UnregisterEvent('PET_BAR_HIDEGRID')
-	PetActionBar_ShowGrid()
 	MultiActionBar_Update = D['Dummy']
 end
 
@@ -190,8 +187,8 @@ function ab:Cooldown(start, duration, enable, charges, maxcharges, forceShowdraw
 end
 
 function ab:AddHooks()
-	hooksecurefunc('ActionButton_UpdateFlyout', self.StyleFlyout)
-	hooksecurefunc('SpellButton_OnClick', self.StyleFlyout)
+	-- hooksecurefunc('ActionButton_UpdateFlyout', self.StyleFlyout)
+	-- hooksecurefunc('SpellButton_OnClick', self.StyleFlyout)
 	hooksecurefunc('ActionButton_UpdateRangeIndicator', ab.RangeUpdate)
 	if C['actionbar']['borderhighlight'] then
 		hooksecurefunc('ActionButton_ShowOverlayGlow', ab.StartHighlight)
@@ -210,7 +207,7 @@ function ab:FixMBBR()
 
 		Button:SetAttribute('showgrid', 1)
 		Button.noGrid = nil
-		Button:ShowGrid(ACTION_BUTTON_SHOW_GRID_REASON_CVAR)
+		--Button:ShowGrid(ACTION_BUTTON_SHOW_GRID_REASON_CVAR)
 		Button:Show()
 	end
 end

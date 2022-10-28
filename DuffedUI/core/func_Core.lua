@@ -400,7 +400,7 @@ D['CreateGF'] = function(self, w, h, o, r, g, b, a1, a2)
 	local gradientFrame = self:CreateTexture(nil, 'BACKGROUND')
 	gradientFrame:SetAllPoints()
 	gradientFrame:SetTexture(C['media']['blank'])
-	gradientFrame:SetGradientAlpha(o, r, g, b, a1, r, g, b, a2)
+	gradientFrame:SetGradient(o, CreateColor(r, g, b, a1), CreateColor(r, g, b, a2))
 end
 
 D['Print'] = function(...) print('|cffC41F3B'..D['Title']..'|r:', ...) end

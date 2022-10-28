@@ -12,30 +12,24 @@ function ab:CreateStanceBar()
 	StanceBar:SetWidth((PetSize * 4) + (PetSize * 3))
 	StanceBar:ClearAllPoints()
 	StanceBar:Point('TOPLEFT', 0, -200)
-	StanceBarFrame.ignoreFramePositionManager = true
-	StanceBarFrame:StripTextures()
-	StanceBarFrame:SetParent(StanceBar)
-	StanceBarFrame:ClearAllPoints()
-	StanceBarFrame:SetPoint('TOPLEFT', StanceBar, 'TOPLEFT', -7, 0)
-	StanceBarFrame:EnableMouse(false)
 
-	for i = 1, NUM_STANCE_SLOTS do
-		local Button = _G['StanceButton'..i]
-
-		Button:Show()
-		local Icon = _G['StanceButton'..i..'Icon']
-		Icon:SetInside()
-
-		if (i ~= 1) then
-			local Previous = _G['StanceButton'..i-1]
-			Button:ClearAllPoints()
-			if C['actionbar']['verticalshapeshift'] then
-				Button:Point('TOP', Previous, 'BOTTOM', 0, -Spacing)
-			else
-				Button:Point('LEFT', Previous, 'RIGHT', Spacing, 0)
-			end
-		end
-	end
+	--for i, button in pairs(self.actionButtons) do
+	--	local Button = _G['StanceButton'..i]
+--
+	--	Button:Show()
+	--	local Icon = _G['StanceButton'..i..'Icon']
+	--	Icon:SetInside()
+--
+	--	if (i ~= 1) then
+	--		local Previous = _G['StanceButton'..i-1]
+	--		Button:ClearAllPoints()
+	--		if C['actionbar']['verticalshapeshift'] then
+	--			Button:Point('TOP', Previous, 'BOTTOM', 0, -Spacing)
+	--		else
+	--			Button:Point('LEFT', Previous, 'RIGHT', Spacing, 0)
+	--		end
+	--	end
+	--end
 
 	if C['actionbar']['shapeshiftmouseover'] then
 		local function mouseover(alpha)

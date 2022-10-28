@@ -94,7 +94,7 @@ function ab:SkinPetAndShiftButton(Normal, Button, Icon, Name, Pet)
 	if (Pet) then
 		if (PetSize < 30) then
 			local AutoCast = _G[Name..'AutoCastable']
-			AutoCast:SetAlpha(0)
+			-- AutoCast:SetAlpha(0)
 		end
 
 		local Shine = _G[Name..'Shine']
@@ -127,14 +127,14 @@ function ab:SkinPetButtons()
 end
 
 function ab:SkinStanceButtons()
-	for i = 1, NUM_STANCE_SLOTS do
-		local Name = 'StanceButton'..i
-		local Button = _G[Name]
-		local Icon = _G[Name..'Icon']
-		local Normal = _G[Name..'NormalTexture']
-
-		ab:SkinPetAndShiftButton(Normal, Button, Icon, Name, false)
-	end
+	--for i = 1, NUM_STANCE_SLOTS do
+	--	local Name = 'StanceButton'..i
+	--	local Button = _G[Name]
+	--	local Icon = _G[Name..'Icon']
+	--	local Normal = _G[Name..'NormalTexture']
+--
+	--	ab:SkinPetAndShiftButton(Normal, Button, Icon, Name, false)
+	--end
 end
 
 function ab:SkinFlyoutButtons()

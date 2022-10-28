@@ -242,6 +242,6 @@ function Module:OnEnable()
 		end
 	end
 
-	hooksecurefunc('ContainerFrameItemButton_OnModifiedClick', hideSplitFrame)
+	hooksecurefunc('ContainerFrameItemButton_OnClick', hideSplitFrame)
 	hooksecurefunc('MerchantItemButton_OnModifiedClick', hideSplitFrame)
 end

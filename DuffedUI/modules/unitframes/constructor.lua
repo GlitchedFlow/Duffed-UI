@@ -107,8 +107,8 @@ D['SpawnUF'] = function(self)
 			t_boss:UnregisterAllEvents()
 			t_boss.Show = D['Dummy']
 			t_boss:Hide()
-			_G['Boss' .. i .. 'TargetFrame' .. 'HealthBar']:UnregisterAllEvents()
-			_G['Boss' .. i .. 'TargetFrame' .. 'ManaBar']:UnregisterAllEvents()
+			_G['Boss' .. i .. 'TargetFrame'].healthbar:UnregisterAllEvents()
+			_G['Boss' .. i .. 'TargetFrame'].manabar:UnregisterAllEvents()
 		end
 
 		local boss = {}
