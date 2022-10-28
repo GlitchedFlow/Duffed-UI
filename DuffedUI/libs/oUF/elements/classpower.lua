@@ -50,19 +50,16 @@ local oUF = ns.oUF
 local _, PlayerClass = UnitClass('player')
 
 -- sourced from FrameXML/Constants.lua
-local SPEC_MAGE_ARCANE = SPEC_MAGE_ARCANE or 1
-local SPEC_MONK_WINDWALKER = SPEC_MONK_WINDWALKER or 3
-local SPEC_PALADIN_RETRIBUTION = SPEC_PALADIN_RETRIBUTION or 3
-local SPEC_WARLOCK_DESTRUCTION = SPEC_WARLOCK_DESTRUCTION or 3
+local SPEC_MAGE_ARCANE = _G.SPEC_MAGE_ARCANE or 1
+local SPEC_MONK_WINDWALKER = _G.SPEC_MONK_WINDWALKER or 3
+local SPEC_WARLOCK_DESTRUCTION = _G.SPEC_WARLOCK_DESTRUCTION or 3
 local SPELL_POWER_ENERGY = Enum.PowerType.Energy or 3
 local SPELL_POWER_COMBO_POINTS = Enum.PowerType.ComboPoints or 4
 local SPELL_POWER_SOUL_SHARDS = Enum.PowerType.SoulShards or 7
 local SPELL_POWER_HOLY_POWER = Enum.PowerType.HolyPower or 9
 local SPELL_POWER_CHI = Enum.PowerType.Chi or 12
 local SPELL_POWER_ARCANE_CHARGES = Enum.PowerType.ArcaneCharges or 16
-
--- sourced from FrameXML/TargetFrame.lua
-local MAX_COMBO_POINTS = MAX_COMBO_POINTS or 5
+local SPELL_POWER_ESSENCE = Enum.PowerType.Essence or 19
 
 -- Holds the class specific stuff.
 local ClassPowerID, ClassPowerType
@@ -82,10 +79,22 @@ local function UpdateColor(element, powerType)
 			bg:SetVertexColor(r * mu, g * mu, b * mu)
 		end
 	end
+
+	--[[ Callback: ClassPower:PostUpdateColor(r, g, b)
+	Called after the element color has been updated.
+
+	* self - the ClassPower element
+	* r    - the red component of the used color (number)[0-1]
+	* g    - the green component of the used color (number)[0-1]
+	* b    - the blue component of the used color (number)[0-1]
+	--]]
+	if(element.PostUpdateColor) then
+		element:PostUpdateColor(r, g, b)
+	end
 end
 
 local function Update(self, event, unit, powerType)
-	if(not (self.unit == unit and (unit == 'player' and powerType == ClassPowerType
+	if(not (unit and (UnitIsUnit(unit, 'player') and (not powerType or powerType == ClassPowerType)
 		or unit == 'vehicle' and powerType == 'COMBO_POINTS'))) then
 		return
 	end
@@ -101,18 +110,12 @@ local function Update(self, event, unit, powerType)
 		element:PreUpdate()
 	end
 
-	local cur, max, mod, oldMax
+	local cur, max, mod, oldMax, chargedPoints
 	if(event ~= 'ClassPowerDisable') then
-		if(unit == 'vehicle') then
-			-- BUG: UnitPower always returns 0 combo points for vehicles
-			cur = GetComboPoints(unit)
-			max = MAX_COMBO_POINTS
-			mod = 1
-		else
-			cur = UnitPower('player', ClassPowerID, true)
-			max = UnitPowerMax('player', ClassPowerID)
-			mod = UnitPowerDisplayMod(ClassPowerID)
-		end
+		local powerID = unit == 'vehicle' and SPELL_POWER_COMBO_POINTS or ClassPowerID
+		cur = UnitPower(unit, powerID, true)
+		max = UnitPowerMax(unit, powerID)
+		mod = UnitPowerDisplayMod(powerID)
 
 		-- mod should never be 0, but according to Blizz code it can actually happen
 		cur = mod == 0 and 0 or cur / mod
@@ -120,6 +123,13 @@ local function Update(self, event, unit, powerType)
 		-- BUG: Destruction is supposed to show partial soulshards, but Affliction and Demonology should only show full ones
 		if(ClassPowerType == 'SOUL_SHARDS' and GetSpecialization() ~= SPEC_WARLOCK_DESTRUCTION) then
 			cur = cur - cur % 1
+		end
+
+		if(PlayerClass == 'ROGUE') then
+			chargedPoints = GetUnitChargedPowerPoints(unit)
+
+			-- UNIT_POWER_POINT_CHARGE doesn't provide a power type
+			powerType = powerType or ClassPowerType
 		end
 
 		local numActive = cur + 0.9
@@ -153,9 +163,10 @@ local function Update(self, event, unit, powerType)
 	* max           - the maximum amount of power (number)
 	* hasMaxChanged - indicates whether the maximum amount has changed since the last update (boolean)
 	* powerType     - the active power type (string)
+	* ...           - the indices of currently charged power points, if any
 	--]]
 	if(element.PostUpdate) then
-		return element:PostUpdate(cur, max, oldMax ~= max, powerType)
+		return element:PostUpdate(cur, max, oldMax ~= max, powerType, unpack(chargedPoints or {}))
 	end
 end
 
@@ -176,7 +187,7 @@ local function Visibility(self, event, unit)
 	local shouldEnable
 
 	if(UnitHasVehicleUI('player')) then
-		shouldEnable = true
+		shouldEnable = PlayerVehicleHasComboPoints()
 		unit = 'vehicle'
 	elseif(ClassPowerID) then
 		if(not RequireSpec or RequireSpec == GetSpecialization()) then
@@ -193,7 +204,7 @@ local function Visibility(self, event, unit)
 		end
 	end
 
-	local isEnabled = element.isEnabled
+	local isEnabled = element.__isEnabled
 	local powerType = unit == 'vehicle' and 'COMBO_POINTS' or ClassPowerType
 
 	if(shouldEnable) then
@@ -208,8 +219,22 @@ local function Visibility(self, event, unit)
 
 	if(shouldEnable and not isEnabled) then
 		ClassPowerEnable(self)
+
+		--[[ Callback: ClassPower:PostVisibility(isVisible)
+		Called after the element's visibility has been changed.
+
+		* self      - the ClassPower element
+		* isVisible - the current visibility state of the element (boolean)
+		--]]
+		if(element.PostVisibility) then
+			element:PostVisibility(true)
+		end
 	elseif(not shouldEnable and (isEnabled or isEnabled == nil)) then
 		ClassPowerDisable(self)
+
+		if(element.PostVisibility) then
+			element:PostVisibility(false)
+		end
 	elseif(shouldEnable and isEnabled) then
 		Path(self, event, unit, powerType)
 	end
@@ -235,7 +260,11 @@ do
 		self:RegisterEvent('UNIT_POWER_FREQUENT', Path)
 		self:RegisterEvent('UNIT_MAXPOWER', Path)
 
-		self.ClassPower.isEnabled = true
+		if(PlayerClass == 'ROGUE') then
+			self:RegisterEvent('UNIT_POWER_POINT_CHARGE', Path)
+		end
+
+		self.ClassPower.__isEnabled = true
 
 		if(UnitHasVehicleUI('player')) then
 			Path(self, 'ClassPowerEnable', 'vehicle', 'COMBO_POINTS')
@@ -247,13 +276,14 @@ do
 	function ClassPowerDisable(self)
 		self:UnregisterEvent('UNIT_POWER_FREQUENT', Path)
 		self:UnregisterEvent('UNIT_MAXPOWER', Path)
+		self:UnregisterEvent('UNIT_POWER_POINT_CHARGE', Path)
 
 		local element = self.ClassPower
 		for i = 1, #element do
 			element[i]:Hide()
 		end
 
-		self.ClassPower.isEnabled = false
+		element.__isEnabled = false
 		Path(self, 'ClassPowerDisable', 'player', ClassPowerType)
 	end
 
@@ -279,14 +309,15 @@ do
 		ClassPowerID = SPELL_POWER_ARCANE_CHARGES
 		ClassPowerType = 'ARCANE_CHARGES'
 		RequireSpec = SPEC_MAGE_ARCANE
+	elseif(PlayerClass == 'EVOKER') then
+		ClassPowerID = SPELL_POWER_ESSENCE
+		ClassPowerType = 'ESSENCE'
 	end
 end
 
 local function Enable(self, unit)
-	if(unit ~= 'player') then return end
-
 	local element = self.ClassPower
-	if(element) then
+	if(element and UnitIsUnit(unit, 'player')) then
 		element.__owner = self
 		element.__max = #element
 		element.ForceUpdate = ForceUpdate

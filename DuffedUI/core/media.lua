@@ -8,7 +8,7 @@ local CreateFrame = _G.CreateFrame
 local DuffedUIMedia = CreateFrame('Frame', 'DuffedUIFonts')
 
 local DuffedUIFont = CreateFont('DuffedUIFont')
-DuffedUIFont:SetFont(C['media']['font'], 11)
+DuffedUIFont:SetFont(C['media']['font'], 11, '')
 DuffedUIFont:SetShadowColor(0, 0, 0, 1)
 DuffedUIFont:SetShadowOffset(1.25, -1.25)
 

@@ -1,8 +1,59 @@
-local parent, ns = ...
+local _, ns = ...
 local oUF = ns.oUF
 local Private = oUF.Private
 
 local frame_metatable = Private.frame_metatable
+
+local colorMixin = {
+	SetRGBA = function(self, r, g, b, a)
+		if(r > 1 or g > 1 or b > 1) then
+			r, g, b = r / 255, g / 255, b / 255
+		end
+
+		self.r = r
+		self[1] = r
+		self.g = g
+		self[2] = g
+		self.b = b
+		self[3] = b
+		self.a = a
+
+		-- pre-generate the hex color, there's no point to this being generated on the fly
+		self.hex = string.format('ff%02x%02x%02x', self:GetRGBAsBytes())
+	end,
+	SetAtlas = function(self, atlas)
+		self.atlas = atlas
+	end,
+	GetAtlas = function(self)
+		return self.atlas
+	end,
+	GenerateHexColor = function(self)
+		return self.hex
+	end,
+}
+
+--[[ Colors: oUF:CreateColor(r, g, b[, a])
+Wrapper for [SharedXML\Color.lua's ColorMixin](https://wowpedia.fandom.com/wiki/ColorMixin), extended to support indexed colors used in oUF, as
+well as extra methods for dealing with atlases.
+
+The rgb values can be either normalized (0-1) or bytes (0-255).
+
+* self - the global oUF object
+* r    - value used as represent the red color (number)
+* g    - value used to represent the green color (number)
+* b    - value used to represent the blue color (number)
+* a    - value used to represent the opacity (number, optional)
+
+## Returns
+
+* color - the ColorMixin-based object
+--]]
+function oUF:CreateColor(r, g, b, a)
+	local color = Mixin({}, ColorMixin, colorMixin)
+	color:SetRGBA(r, g, b, a)
+
+	return color
+end
 
 local colors = {
 	smooth = {
@@ -10,27 +61,44 @@ local colors = {
 		1, 1, 0,
 		0, 1, 0
 	},
-	health = {49 / 255, 207 / 255, 37 / 255},
-	disconnected = {.6, .6, .6},
-	tapped = {.6, .6, .6},
+	health = oUF:CreateColor(49, 207, 37),
+	disconnected = oUF:CreateColor(0.6, 0.6, 0.6),
+	tapped = oUF:CreateColor(0.6, 0.6, 0.6),
 	runes = {
-		{247 / 255, 65 / 255, 57 / 255}, -- blood
-		{148 / 255, 203 / 255, 247 / 255}, -- frost
-		{173 / 255, 235 / 255, 66 / 255}, -- unholy
+		oUF:CreateColor(247, 65, 57), -- blood
+		oUF:CreateColor(148, 203, 247), -- frost
+		oUF:CreateColor(173, 235, 66), -- unholy
+	},
+	selection = {
+		[ 0] = oUF:CreateColor(255, 0, 0), -- HOSTILE
+		[ 1] = oUF:CreateColor(255, 129, 0), -- UNFRIENDLY
+		[ 2] = oUF:CreateColor(255, 255, 0), -- NEUTRAL
+		[ 3] = oUF:CreateColor(0, 255, 0), -- FRIENDLY
+		[ 4] = oUF:CreateColor(0, 0, 255), -- PLAYER_SIMPLE
+		[ 5] = oUF:CreateColor(96, 96, 255), -- PLAYER_EXTENDED
+		[ 6] = oUF:CreateColor(170, 170, 255), -- PARTY
+		[ 7] = oUF:CreateColor(170, 255, 170), -- PARTY_PVP
+		[ 8] = oUF:CreateColor(83, 201, 255), -- FRIEND
+		[ 9] = oUF:CreateColor(128, 128, 128), -- DEAD
+		-- [10] = {}, -- COMMENTATOR_TEAM_1, unavailable to players
+		-- [11] = {}, -- COMMENTATOR_TEAM_2, unavailable to players
+		[12] = oUF:CreateColor(255, 255, 139), -- SELF, buggy
+		[13] = oUF:CreateColor(0, 153, 0), -- BATTLEGROUND_FRIENDLY_PVP
 	},
 	class = {},
 	debuff = {},
 	reaction = {},
 	power = {},
+	threat = {},
 }
 
 -- We do this because people edit the vars directly, and changing the default
 -- globals makes SPICE FLOW!
 local function customClassColors()
-	if(CUSTOM_CLASS_COLORS) then
+	if(_G.CUSTOM_CLASS_COLORS) then
 		local function updateColors()
-			for classToken, color in next, CUSTOM_CLASS_COLORS do
-				colors.class[classToken] = {color.r, color.g, color.b}
+			for classToken, color in next, _G.CUSTOM_CLASS_COLORS do
+				colors.class[classToken] = oUF:CreateColor(color.r, color.g, color.b)
 			end
 
 			for _, obj in next, oUF.objects do
@@ -39,15 +107,15 @@ local function customClassColors()
 		end
 
 		updateColors()
-		CUSTOM_CLASS_COLORS:RegisterCallback(updateColors)
+		_G.CUSTOM_CLASS_COLORS:RegisterCallback(updateColors)
 
 		return true
 	end
 end
 
 if(not customClassColors()) then
-	for classToken, color in next, RAID_CLASS_COLORS do
-		colors.class[classToken] = {color.r, color.g, color.b}
+	for classToken, color in next, _G.RAID_CLASS_COLORS do
+		colors.class[classToken] = oUF:CreateColor(color.r, color.g, color.b)
 	end
 
 	local eventHandler = CreateFrame('Frame')
@@ -60,12 +128,12 @@ if(not customClassColors()) then
 	end)
 end
 
-for debuffType, color in next, DebuffTypeColor do
-	colors.debuff[debuffType] = {color.r, color.g, color.b}
+for debuffType, color in next, _G.DebuffTypeColor do
+	colors.debuff[debuffType] = oUF:CreateColor(color.r, color.g, color.b)
 end
 
-for eclass, color in next, FACTION_BAR_COLORS do
-	colors.reaction[eclass] = {color.r, color.g, color.b}
+for eclass, color in next, _G.FACTION_BAR_COLORS do
+	colors.reaction[eclass] = oUF:CreateColor(color.r, color.g, color.b)
 end
 
 for power, color in next, PowerBarColor do
@@ -73,11 +141,15 @@ for power, color in next, PowerBarColor do
 		if(type(select(2, next(color))) == 'table') then
 			colors.power[power] = {}
 
-			for index, color in next, color do
-				colors.power[power][index] = {color.r, color.g, color.b}
+			for index, color_ in next, color do
+				colors.power[power][index] = oUF:CreateColor(color_.r, color_.g, color_.b)
 			end
 		else
-			colors.power[power] = {color.r, color.g, color.b, atlas = color.atlas}
+			colors.power[power] = oUF:CreateColor(color.r, color.g, color.b)
+
+			if(color.atlas) then
+				colors.power[power]:SetAtlas(color.atlas)
+			end
 		end
 	end
 end
@@ -100,11 +172,24 @@ colors.power[16] = colors.power.ARCANE_CHARGES
 colors.power[17] = colors.power.FURY
 colors.power[18] = colors.power.PAIN
 
+-- there's no official colour for evoker's essence
+-- use the average colour of the essence texture instead
+colors.power.ESSENCE = oUF:CreateColor(100, 173, 206)
+colors.power[19] = colors.power.ESSENCE
+
+-- alternate power, sourced from FrameXML/CompactUnitFrame.lua
+colors.power.ALTERNATE = oUF:CreateColor(0.7, 0.7, 0.6)
+colors.power[10] = colors.power.ALTERNATE
+
+for i = 0, 3 do
+	colors.threat[i] = oUF:CreateColor(GetThreatStatusColor(i))
+end
+
 local function colorsAndPercent(a, b, ...)
 	if(a <= 0 or b == 0) then
 		return nil, ...
 	elseif(a >= b) then
-		return nil, select(select('#', ...) - 2, ...)
+		return nil, select(-3, ...)
 	end
 
 	local num = select('#', ...) / 3
@@ -125,7 +210,7 @@ last 3 RGB values are returned.
 * b    - value used as denominator to calculate the percentage (number)
 * ...  - a list of RGB percent values. At least 6 values should be passed (number [0-1])
 --]]
-local function RGBColorGradient(...)
+function oUF:RGBColorGradient(...)
 	local relperc, r1, g1, b1, r2, g2, b2 = colorsAndPercent(...)
 	if(relperc) then
 		return r1 + (r2 - r1) * relperc, g1 + (g2 - g1) * relperc, b1 + (b2 - b1) * relperc
@@ -139,16 +224,8 @@ local function getY(r, g, b)
 	return 0.299 * r + 0.587 * g + 0.114 * b
 end
 
---[[ Colors: oUF:RGBToHCY(r, g, b)
-Used to convert a color from RGB to HCY color space.
-
-* self - the global oUF object
-* r    - red color component (number [0-1])
-* g    - green color component (number [0-1])
-* b    - blue color component (number [0-1])
---]]
-function oUF:RGBToHCY(r, g, b)
-	local min, max = min(r, g, b), max(r, g, b)
+local function rgbToHCY(r, g, b)
+	local min, max = math.min(r, g, b), math.max(r, g, b)
 	local chroma = max - min
 	local hue
 	if(chroma > 0) then
@@ -164,20 +241,11 @@ function oUF:RGBToHCY(r, g, b)
 	return hue, chroma, getY(r, g, b)
 end
 
-local math_abs = math.abs
---[[ Colors: oUF:HCYtoRGB(hue, chroma, luma)
-Used to convert a color from HCY to RGB color space.
-
-* self   - the global oUF object
-* hue    - hue color component (number [0-1])
-* chroma - chroma color component (number [0-1])
-* luma   - luminance color component (number [0-1])
---]]
-function oUF:HCYtoRGB(hue, chroma, luma)
+local function hcyToRGB(hue, chroma, luma)
 	local r, g, b = 0, 0, 0
 	if(hue and luma > 0) then
 		local h2 = hue * 6
-		local x = chroma * (1 - math_abs(h2 % 2 - 1))
+		local x = chroma * (1 - math.abs(h2 % 2 - 1))
 		if(h2 < 1) then
 			r, g, b = chroma, x, 0
 		elseif(h2 < 2) then
@@ -218,14 +286,14 @@ last 3 HCY values are returned.
 * b    - value used as denominator to calculate the percentage (number)
 * ...  - a list of HCY color values. At least 6 values should be passed (number [0-1])
 --]]
-local function HCYColorGradient(...)
+function oUF:HCYColorGradient(...)
 	local relperc, r1, g1, b1, r2, g2, b2 = colorsAndPercent(...)
 	if(not relperc) then
 		return r1, g1, b1
 	end
 
-	local h1, c1, y1 = self:RGBToHCY(r1, g1, b1)
-	local h2, c2, y2 = self:RGBToHCY(r2, g2, b2)
+	local h1, c1, y1 = rgbToHCY(r1, g1, b1)
+	local h2, c2, y2 = rgbToHCY(r2, g2, b2)
 	local c = c1 + (c2 - c1) * relperc
 	local y = y1 + (y2 - y1) * relperc
 
@@ -237,9 +305,9 @@ local function HCYColorGradient(...)
 			dh = dh - 1
 		end
 
-		return self:HCYtoRGB((h1 + dh * relperc) % 1, c, y)
+		return hcyToRGB((h1 + dh * relperc) % 1, c, y)
 	else
-		return self:HCYtoRGB(h1 or h2, c, y)
+		return hcyToRGB(h1 or h2, c, y)
 	end
 
 end
@@ -253,17 +321,12 @@ set to true, `:HCYColorGradient` will be called, else `:RGBColorGradient`.
 * b    - value used as denominator to calculate the percentage (number)
 * ...  - a list of color values. At least 6 values should be passed (number [0-1])
 --]]
-local function ColorGradient(...)
-	return (oUF.useHCYColorGradient and HCYColorGradient or RGBColorGradient)(...)
+function oUF:ColorGradient(...)
+	return (oUF.useHCYColorGradient and oUF.HCYColorGradient or oUF.RGBColorGradient)(self, ...)
 end
 
-Private.colors = colors
-
 oUF.colors = colors
-oUF.ColorGradient = ColorGradient
-oUF.RGBColorGradient = RGBColorGradient
-oUF.HCYColorGradient = HCYColorGradient
 oUF.useHCYColorGradient = false
 
 frame_metatable.__index.colors = colors
-frame_metatable.__index.ColorGradient = ColorGradient
+frame_metatable.__index.ColorGradient = oUF.ColorGradient

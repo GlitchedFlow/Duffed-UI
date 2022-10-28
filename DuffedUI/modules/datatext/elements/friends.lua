@@ -119,7 +119,7 @@ local statusTable = { ' |cffFFFFFF[|r|cffFF9900'..L['chat'].AFK..'|r|cffFFFFFF]|
 local groupedTable = { '|cffaaaaaa*|r', '' }
 local friendTable, BNTable, tableList = {}, {}, {}
 local friendOnline, friendOffline = gsub(ERR_FRIEND_ONLINE_SS,'\124Hplayer:%%s\124h%[%%s%]\124h',''), gsub(ERR_FRIEND_OFFLINE_S,'%%s','')
-local BNET_CLIENT_WOW, BNET_CLIENT_D3, BNET_CLIENT_WTCG, BNET_CLIENT_SC2, BNET_CLIENT_HEROES, BNET_CLIENT_OVERWATCH, BNET_CLIENT_SC, BNET_CLIENT_DESTINY2, BNET_CLIENT_COD = BNET_CLIENT_WOW, BNET_CLIENT_D3, BNET_CLIENT_WTCG, BNET_CLIENT_SC2, BNET_CLIENT_HEROES, BNET_CLIENT_OVERWATCH, BNET_CLIENT_SC, BNET_CLIENT_DESTINY2, BNET_CLIENT_COD
+local BNET_CLIENT_WOW, BNET_CLIENT_APP, BNET_CLIENT_HEROES, BNET_CLIENT_CLNT = BNET_CLIENT_WOW, BNET_CLIENT_APP, BNET_CLIENT_HEROES, BNET_CLIENT_CLNT
 local wowString = BNET_CLIENT_WOW
 local classicID = WOW_PROJECT_CLASSIC
 local retailID = WOW_PROJECT_ID
@@ -129,32 +129,15 @@ local lastPanel
 local clientSorted = {}
 local clientTags = {
 	[_G.BNET_CLIENT_WOW] = 'WoW',
-	[_G.BNET_CLIENT_D3] = 'D3',
-	[_G.BNET_CLIENT_WTCG] = 'HS',
-	[_G.BNET_CLIENT_HEROES] = 'HotS',
-	[_G.BNET_CLIENT_OVERWATCH] = 'OW',
-	[_G.BNET_CLIENT_SC] = 'SC',
-	[_G.BNET_CLIENT_SC2] = 'SC2',
-	[_G.BNET_CLIENT_COD] = 'BO4',
-	[_G.BNET_CLIENT_COD_MW] = 'MW',
-	[_G.BNET_CLIENT_COD_MW2] = 'MW2',
-	[_G.BNET_CLIENT_COD_BOCW] = 'CW',
-	["BSAp"] = 'Handy',
+    [_G.BNET_CLIENT_APP] = 'App',
+    [_G.BNET_CLIENT_HEROES] = 'Hero',
+	[_G.BNET_CLIENT_CLNT] = 'CLNT',
 }
 local clientIndex = {
 	[_G.BNET_CLIENT_WOW] = 1,
-	[_G.BNET_CLIENT_D3] = 2,
-	[_G.BNET_CLIENT_WTCG] = 3,
-	[_G.BNET_CLIENT_HEROES] = 4,
-	[_G.BNET_CLIENT_OVERWATCH] = 5,
-	[_G.BNET_CLIENT_SC] = 6,
-	[_G.BNET_CLIENT_SC2] = 7,
-	[_G.BNET_CLIENT_COD] = 8,
-	[_G.BNET_CLIENT_COD_MW] = 9,
-	[_G.BNET_CLIENT_COD_MW2] = 10,
-	[_G.BNET_CLIENT_COD_BOCW] = 11,
-	App = 12,
-	BSAp = 13,
+    [_G.BNET_CLIENT_APP] = 2,
+    [_G.BNET_CLIENT_HEROES] = 3,
+	[_G.BNET_CLIENT_CLNT] = 4,
 }
 
 local function SortAlphabeticName(a, b)

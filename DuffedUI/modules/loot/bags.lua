@@ -53,7 +53,7 @@ local SetItemButtonDesaturated = _G.SetItemButtonDesaturated
 local SetItemButtonTexture = _G.SetItemButtonTexture
 local SortReagentBankBags = _G.SortReagentBankBags
 local SOUNDKIT = _G.SOUNDKIT
-local Token1, Token2, Token3 = _G.BackpackTokenFrameToken1, _G.BackpackTokenFrameToken2, _G.BackpackTokenFrameToken3
+-- local Token1, Token2, Token3 = _G.BackpackTokenFrameToken1, _G.BackpackTokenFrameToken2, _G.BackpackTokenFrameToken3
 local UIParent = _G.UIParent
 
 Color1 = D['RGBToHex'](unpack(C['media']['datatextcolor1']))
@@ -1298,35 +1298,35 @@ function Stuffing:InitBags()
 	--gold:SetScript('OnEnter', OnGoldEnter)
 	--gold:SetScript('OnLeave', OnGoldLeave)
 
-	do
-		Token3:ClearAllPoints()
-		Token3:SetPoint('TOP', f, 'BOTTOM', -70, -10)
-		Token2:ClearAllPoints()
-		Token2:SetPoint('LEFT', Token3, 'RIGHT', 14, 0)
-		Token1:ClearAllPoints()
-		Token1:SetPoint('LEFT', Token2, 'RIGHT', 14, 0)
-	end
+	--do
+	--	Token3:ClearAllPoints()
+	--	Token3:SetPoint('TOP', f, 'BOTTOM', -70, -10)
+	--	Token2:ClearAllPoints()
+	--	Token2:SetPoint('LEFT', Token3, 'RIGHT', 14, 0)
+	--	Token1:ClearAllPoints()
+	--	Token1:SetPoint('LEFT', Token2, 'RIGHT', 14, 0)
+	--end
 
-	for i = 1, 3 do
-		local Token = _G['BackpackTokenFrameToken' .. i]
-		local Icon = _G['BackpackTokenFrameToken' .. i .. 'Icon']
-		local Count = _G['BackpackTokenFrameToken' .. i .. 'Count']
-
-		Token:SetParent(f)
-		Token:SetScale(1)
-		Token:CreateBackdrop()
-		Token.backdrop:SetAllPoints(Icon)
-		Token.backdrop:SetFrameLevel(6)
-		Token:SetFrameStrata('MEDIUM')
-		Token:SetFrameLevel(51)
-
-		Icon:SetSize(16, 16)
-		Icon:SetTexCoord(D['IconCoord'][1], D['IconCoord'][2], D['IconCoord'][3], D['IconCoord'][4])
-		Icon:SetPoint('LEFT', Token, 'RIGHT', -8, 2)
-
-		Count:SetFont(C['media']['font'], 11, 'THINOUTLINE')
-		Count:SetShadowOffset(0, 0)
-	end
+	-- for i = 1, 3 do
+	--	local Token = _G['BackpackTokenFrameToken' .. i]
+	--	local Icon = _G['BackpackTokenFrameToken' .. i .. 'Icon']
+	--	local Count = _G['BackpackTokenFrameToken' .. i .. 'Count']
+	--
+	--	Token:SetParent(f)
+	--	Token:SetScale(1)
+	--	Token:CreateBackdrop()
+	--	Token.backdrop:SetAllPoints(Icon)
+	--	Token.backdrop:SetFrameLevel(6)
+	--	Token:SetFrameStrata('MEDIUM')
+	--	Token:SetFrameLevel(51)
+	--
+	--	Icon:SetSize(16, 16)
+	--	Icon:SetTexCoord(D['IconCoord'][1], D['IconCoord'][2], D['IconCoord'][3], D['IconCoord'][4])
+	--	Icon:SetPoint('LEFT', Token, 'RIGHT', -8, 2)
+	--
+	--	Count:SetFont(C['media']['font'], 11, 'THINOUTLINE')
+	--	Count:SetShadowOffset(0, 0)
+	--end
 	
 	local button = CreateFrame('Button', nil, f)
 	button:EnableMouse(true)
@@ -1582,12 +1582,12 @@ function Stuffing:ADDON_LOADED(addon)
 	self:RegisterEvent('PLAYERREAGENTBANKSLOTS_CHANGED')
 	self:RegisterEvent('BAG_CLOSED')
 	self:RegisterEvent('BAG_UPDATE_COOLDOWN')
-	self:RegisterEvent('SCRAPPING_MACHINE_SHOW')
+	-- self:RegisterEvent('SCRAPPING_MACHINE_SHOW')
 	self:RegisterEvent('BAG_UPDATE_DELAYED')
 	self:RegisterEvent('SOULBIND_FORGE_INTERACTION_STARTED')
 	self:RegisterEvent('SOULBIND_FORGE_INTERACTION_ENDED')
-	self:RegisterEvent('ITEM_UPGRADE_MASTER_OPENED')
-	self:RegisterEvent('ITEM_UPGRADE_MASTER_CLOSED')
+	-- self:RegisterEvent('ITEM_UPGRADE_MASTER_OPENED')
+	-- self:RegisterEvent('ITEM_UPGRADE_MASTER_CLOSED')
 
 	self:InitBags()
 

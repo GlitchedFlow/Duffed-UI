@@ -524,11 +524,11 @@ D['ClassTimer'] = function(self)
 		playerDebuffMover:SetSize(218, 15)
 
 		if layout == 3 then
-			playerDebuffMover:SetPoint('BOTTOM', self.Health, 'BOTTOM', 0, 25)
+			playerDebuffMover:SetPoint('TOP', self.Health, 'BOTTOM', 0, -25)
 			playerDebuffFrame:Point('TOPLEFT', playerDebuffMover, 'BOTTOMLEFT', 0, 25)
 			playerDebuffFrame:Point('TOPRIGHT', playerDebuffMover, 'BOTTOMRIGHT', 0, 25)
 		else
-			playerDebuffMover:SetPoint('BOTTOM', self.Health, 'BOTTOM', 0, 7)
+			playerDebuffMover:SetPoint('TOP', self.Health, 'BOTTOM', 0, -7)
 			playerDebuffFrame:Point('TOPLEFT', playerDebuffMover, 'BOTTOMLEFT', 0, 7)
 			playerDebuffFrame:Point('TOPRIGHT', playerDebuffMover, 'BOTTOMRIGHT', 0, 7)
 		end

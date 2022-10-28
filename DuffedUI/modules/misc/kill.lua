@@ -9,35 +9,35 @@ Kill:SetScript('OnEvent', function(self, event, addon)
 
 	if addon ~= 'DuffedUI' then return end
 	if C['raid']['enable'] then
-		InterfaceOptionsFrameCategoriesButton11:SetScale(0.00001)
-		InterfaceOptionsFrameCategoriesButton11:SetAlpha(0)
+		-- InterfaceOptionsFrameCategoriesButton11:SetScale(0.00001)
+		-- InterfaceOptionsFrameCategoriesButton11:SetAlpha(0)
 
 		CompactRaidFrameManager:SetParent(DuffedUIHider)
-		CompactUnitFrameProfiles:UnregisterAllEvents()
+		-- CompactUnitFrameProfiles:UnregisterAllEvents()
 
-		for i = 1, MAX_PARTY_MEMBERS do
-			local member = 'PartyMemberFrame'..i
-
-			_G[member]:UnregisterAllEvents()
-			_G[member]:SetParent(DuffedUIHider)
-			_G[member]:Hide()
-			_G[member .. 'HealthBar']:UnregisterAllEvents()
-			_G[member .. 'ManaBar']:UnregisterAllEvents()
-
-			local pet = member .. 'PetFrame'
-
-			_G[pet]:UnregisterAllEvents()
-			_G[pet]:SetParent(DuffedUIHider)
-			_G[pet .. 'HealthBar']:UnregisterAllEvents()
-
-			HidePartyFrame()
-			ShowPartyFrame = function() return end
-			HidePartyFrame = function() return end
-		end
+		-- for i = 1, MAX_PARTY_MEMBERS do
+		-- 	local member = string.format('PartyMemberFrame%d', i)
+		-- 
+		-- 	 _G[member]:UnregisterAllEvents()
+		-- 	_G[member]:SetParent(DuffedUIHider)
+		-- 	_G[member]:Hide()
+		-- 	_G[member .. 'HealthBar']:UnregisterAllEvents()
+		-- 	_G[member .. 'ManaBar']:UnregisterAllEvents()
+		-- 
+		-- 	local pet = member .. 'PetFrame'
+		-- 
+		-- 	_G[pet]:UnregisterAllEvents()
+		-- 	_G[pet]:SetParent(DuffedUIHider)
+		-- 	_G[pet .. 'HealthBar']:UnregisterAllEvents()
+		-- 
+		-- 	HidePartyFrame()
+		-- 	ShowPartyFrame = function() return end
+		-- 	HidePartyFrame = function() return end
+		-- end
 	end
 
 	StreamingIcon:Kill()
-	PartyMemberBackground:Kill()
+	-- PartyMemberBackground:Kill()
 	TutorialFrameAlertButton:Kill()
 
 	local uioptionFrames = {
@@ -54,10 +54,10 @@ Kill:SetScript('OnEvent', function(self, event, addon)
 	if C['unitframes']['classbar'] then
 		SetCVar('nameplateShowSelf', 0)
 		SetCVar('nameplateResourceOnTarget', 0)
-		InterfaceOptionsNamesPanelUnitNameplatesPersonalResource:SetAlpha(0)
-		InterfaceOptionsNamesPanelUnitNameplatesPersonalResourceText:Kill()
-		InterfaceOptionsNamesPanelUnitNameplatesPersonalResourceOnEnemy:SetAlpha(0)
-		InterfaceOptionsNamesPanelUnitNameplatesPersonalResourceOnEnemyText:Kill()
+		-- InterfaceOptionsNamesPanelUnitNameplatesPersonalResource:SetAlpha(0)
+		-- InterfaceOptionsNamesPanelUnitNameplatesPersonalResourceText:Kill()
+		-- InterfaceOptionsNamesPanelUnitNameplatesPersonalResourceOnEnemy:SetAlpha(0)
+		-- InterfaceOptionsNamesPanelUnitNameplatesPersonalResourceOnEnemyText:Kill()
 	else
 		SetCVar('nameplateShowSelf', 1)
 		SetCVar('nameplateResourceOnTarget', 0)
@@ -67,9 +67,9 @@ Kill:SetScript('OnEvent', function(self, event, addon)
 
 	if C['auras']['player'] then
 		BuffFrame:Kill()
-		TemporaryEnchantFrame:Kill()
-		InterfaceOptionsFrameCategoriesButton12:SetScale(0.00001)
-		InterfaceOptionsFrameCategoriesButton12:SetAlpha(0)	
+		-- TemporaryEnchantFrame:Kill()
+		-- InterfaceOptionsFrameCategoriesButton12:SetScale(0.00001)
+		-- InterfaceOptionsFrameCategoriesButton12:SetAlpha(0)	
 	end
 
 	SetCVar('showArenaEnemyFrames', 0)

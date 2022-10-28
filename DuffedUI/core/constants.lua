@@ -5,10 +5,10 @@ local math_min = math.min
 local string_match = string.match
 
 local resolution = select(1, GetPhysicalScreenSize()).."x"..select(2, GetPhysicalScreenSize())
-local windowed = Display_DisplayModeDropDown:windowedmode()
+-- local windowed = Display_DisplayModeDropDown:windowedmode()
 
 D['Dummy'] = function() return end
-D['MyName'] = select(1, UnitName('player'))
+D['MyName'] = UnitName('player')
 D['Class'] = select(2, UnitClass('player'))
 D['MyRace'] = select(2, UnitRace('player'))
 D['Faction'], D['LocalizedFaction'] = UnitFactionGroup("player")

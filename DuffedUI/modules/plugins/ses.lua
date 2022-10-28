@@ -82,7 +82,7 @@ else
 	spec:Size(144 - 22, 20)
 	spec:SetParent(oUFDuffedUI_PetBattleFrameHider)
 end
-spec.t = spec:CreateFontString(spec, 'OVERLAY')
+spec.t = spec:CreateFontString('SpecFont', 'OVERLAY')
 spec.t:SetPoint('CENTER')
 spec.t:SetFont(f, fs, ff)
 
