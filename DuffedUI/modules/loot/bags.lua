@@ -411,7 +411,8 @@ function Stuffing:SlotUpdate(b)
 		if C['bags'].ItemLevel == true and b.itemlevel and quality > 1 and (b.itemClassID == 2 or b.itemClassID == 4 or (b.itemClassID == 3 and b.itemSubClassID == 11)) then
 			b.itemlevel = IsRealItemLevel(clink, self, b.bag, b.slot) or b.itemlevel
 			b.frame.text:SetText(b.itemlevel)
-			b.frame.text:SetTextColor(GetItemQualityColor(quality))
+			local rC,gC,bC = GetItemQualityColor(quality)
+			b.frame.text:SetTextColor(rC,gC,bC)
 		end
 
 		if b.frame.Azerite and C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItemByID(clink) then
@@ -425,7 +426,8 @@ function Stuffing:SlotUpdate(b)
 		end
 
 		if not b.frame.lock and quality and quality > Enum.ItemQuality.Common and not (isQuestItem or questId) then
-			b.frame:SetBackdropBorderColor(GetItemQualityColor(quality))
+			local rC,gC,bC =GetItemQualityColor(quality)
+			b.frame:SetBackdropBorderColor(rC,gC,bC)
 		elseif isQuestItem or questId then
 			b.frame:SetBackdropBorderColor(1, 1, 0)
 		end
@@ -671,8 +673,7 @@ function Stuffing:BagFrameSlotNew(p, slot)
 			SetItemButtonTextureVertexColor(ret.frame, 1.0, 1.0, 1.0)
 		end
 	else
-		print(p)
-		ret.frame = CreateFrame('ItemButton', 'StuffingFBag' .. slot .. 'Slot', p, 'BagSlotButtonTemplate')
+		ret.frame = CreateFrame('ItemButton', 'StuffingFBag' .. slot .. 'Slot', p, 'BaseBagSlotButtonTemplate')
 		Mixin(ret.frame, BackdropTemplateMixin)
 
 		hooksecurefunc(ret.frame.IconBorder, 'SetVertexColor', function(self, r, g, b)
@@ -745,7 +746,7 @@ function Stuffing:SlotNew(bag, slot)
 
 		ret.frame:CreateBorder()
 		ret.frame:StyleButton()
-		ret.frame:SetNormalTexture(nil)
+		ret.frame:SetNormalTexture('')
 		ret.icon = _G[ret.frame:GetName() .. 'IconTexture']
 		ret.icon:SetTexCoord(0.1, 0.9, 0.1, 0.9)
 		ret.icon:SetAllPoints()
@@ -1174,14 +1175,18 @@ function Stuffing:InitBags()
 
 	gold:SetAllPoints(gold.text)
 
+	local function UpdateMarketPrice()
+		C_WowTokenPublic.UpdateMarketPrice()
+	end
+
 	local function OnGoldEvent(self)
 		if not _G.IsLoggedIn() then
 			return
 		end
 
 		if not Ticker then
-			C_WowTokenPublic.UpdateMarketPrice()
-			Ticker = _G.C_Timer.NewTicker(60, C_WowTokenPublic.UpdateMarketPrice)
+			UpdateMarketPrice()
+			Ticker = C_Timer.NewTicker(60, UpdateMarketPrice)
 		end
 
 		local NewMoney = GetMoney()

@@ -25,7 +25,9 @@ local BorderTemplate = {
 		g = g or borderColor[2]
 		b = b or borderColor[3]
 
-		a = a or 1
+		if not a or type(a) ~= 'number' then
+			a = 1
+		end
 
 		local cache = borderCache[self]
 		for id in pairs(cache) do cache[id]:SetVertexColor(r, g, b, a) end
