@@ -485,7 +485,7 @@ local function CreateConfigEditBox(parent, group, option, value, max)
 	EditBox.Type = 'EditBox'
 
 	EditBox.Box = CreateFrame('EditBox', nil, EditBox)
-	EditBox.Box:SetFont(C['media'].font, 11)
+	EditBox.Box:SetFont(C['media'].font, 11, '')
 	EditBox.Box:SetShadowOffset(s, -s/2)
 	EditBox.Box:SetPoint('TOPLEFT', EditBox, 4, -2)
 	EditBox.Box:SetPoint('BOTTOMRIGHT', EditBox, -4, 2)
@@ -1270,7 +1270,7 @@ do
 		local continuex = continue:GetWidth()
 		local continuey = continue:GetHeight()
 		local config = DuffedUIConfigUI
-		local interface = GameMenuButtonUIOptions
+		local interface = GameMenuButtonSettings		
 
 		menu:SetHeight(menuy + continuey)
 
@@ -1278,6 +1278,9 @@ do
 		button:SetSize(continuex, continuey)
 		button:Point('TOP', interface, 'BOTTOM', 0, -1)
 		button:SetText('DuffedUI')
+
+		GameMenuButtonEditMode:Point('TOP', button, 'BOTTOM', 0, -1)
+
 		if IsAddOnLoaded('Aurora') then F.Reskin(button) end
 		button:SetScript('OnClick', function(self)
 			if InCombatLockdown() then print(ERR_NOT_IN_COMBAT) return end

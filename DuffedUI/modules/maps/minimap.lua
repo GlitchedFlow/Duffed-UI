@@ -16,35 +16,36 @@ MinimapCluster:Kill()
 Minimap:Size(C['general']['minimapsize'])
 Minimap:SetParent(DuffedUIMinimap)
 Minimap:ClearAllPoints()
-Minimap:Point('TOPLEFT', 2, -2)
-Minimap:Point('BOTTOMRIGHT', -2, 2)
+-- Something is setting the minimap to center after this skrip. Hacky workaround to make sure it is not center.
+C_Timer.NewTimer(0, function() 
+	Minimap:Point('TOPLEFT', 2, -2)
+	Minimap:Point('BOTTOMRIGHT', -2, 2)
+end)
 if C['misc']['GarrisonButton'] then
-	hooksecurefunc('GarrisonLandingPageMinimapButton_UpdateIcon', function(self)
-		GarrisonLandingPageMinimapButton:SetSize(30, 30)
-		GarrisonLandingPageMinimapButton:ClearAllPoints()
-		GarrisonLandingPageMinimapButton:Point('BOTTOM', MinimapToggleButton, 'TOP', 0, 0)
-		GarrisonLandingPageMinimapButton:SetFrameLevel(Minimap:GetFrameLevel() + 1)
-		GarrisonLandingPageMinimapButton:SetFrameStrata(Minimap:GetFrameStrata())
+	hooksecurefunc('ExpansionLandingPageMinimapButtonMixin_UpdateIcon', function(self)
+		ExpansionLandingPageMinimapButton:SetSize(30, 30)
+		ExpansionLandingPageMinimapButton:ClearAllPoints()
+		ExpansionLandingPageMinimapButton:Point('BOTTOM', MinimapToggleButton, 'TOP', 0, 0)
+		ExpansionLandingPageMinimapButton:SetFrameLevel(Minimap:GetFrameLevel() + 1)
+		ExpansionLandingPageMinimapButton:SetFrameStrata(Minimap:GetFrameStrata())
 	end)
 else
-	if (GarrisonLandingPageMinimapButton) then
-		GarrisonLandingPageMinimapButton:Kill()
-	end
+	ExpansionLandingPageMinimapButton:Kill()
 end
--- MinimapBorder:Hide()
--- MinimapBorderTop:Hide()
--- MinimapZoomIn:Hide()
--- MinimapZoomOut:Hide()
+
+MinimapBackdrop:Hide()
+Minimap.ZoomIn:Kill()
+Minimap.ZoomOut:Kill()
 -- MinimapNorthTag:SetTexture(nil)
 -- MinimapZoneTextButton:Hide()
 -- MiniMapTracking:Hide()
 GameTimeFrame:Hide()
 
--- MiniMapMailFrame:ClearAllPoints()
--- MiniMapMailFrame:Point('TOPRIGHT', Minimap, -2, 0)
--- MiniMapMailFrame:SetFrameLevel(Minimap:GetFrameLevel() + 1)
--- MiniMapMailFrame:SetFrameStrata(Minimap:GetFrameStrata())
--- MiniMapMailBorder:Hide()
+MailFrame:ClearAllPoints()
+MailFrame:Point('TOPRIGHT', Minimap, -2, 0)
+MailFrame:SetFrameLevel(Minimap:GetFrameLevel() + 1)
+MailFrame:SetFrameStrata(Minimap:GetFrameStrata())
+
 MiniMapMailIcon:SetTexture('Interface\\AddOns\\DuffedUI\\media\\textures\\mail')
 
 local DuffedUITicket = CreateFrame('Frame', 'DuffedUITicket', DuffedUIMinimap, 'BackdropTemplate')
@@ -61,19 +62,19 @@ DuffedUITicket.Text:SetTextColor(255/255, 243/255,  82/255)
 DuffedUITicket:SetAlpha(0)
 
 -- MiniMapWorldMapButton:Hide()
--- MiniMapInstanceDifficulty:ClearAllPoints()
--- MiniMapInstanceDifficulty:SetParent(Minimap)
--- MiniMapInstanceDifficulty:SetPoint('TOPLEFT', Minimap, 'TOPLEFT', 0, 0)
+MinimapCluster.InstanceDifficulty:ClearAllPoints()
+MinimapCluster.InstanceDifficulty:SetParent(Minimap)
+MinimapCluster.InstanceDifficulty:SetPoint('TOPLEFT', Minimap, 'TOPLEFT', 0, 0)
 -- GuildInstanceDifficulty:ClearAllPoints()
 -- GuildInstanceDifficulty:SetParent(Minimap)
 -- GuildInstanceDifficulty:SetPoint('TOPLEFT', Minimap, 'TOPLEFT', 0, 0)
--- QueueStatusMinimapButton:SetParent(Minimap)
--- QueueStatusMinimapButton:ClearAllPoints()
--- QueueStatusMinimapButton:SetPoint('BOTTOMRIGHT', 0, 0)
+QueueStatusButton:SetParent(Minimap)
+QueueStatusButton:ClearAllPoints()
+QueueStatusButton:SetPoint('BOTTOMRIGHT', 0, 0)
 -- QueueStatusMinimapButtonBorder:Kill()
--- QueueStatusFrame:StripTextures()
--- QueueStatusFrame:SetTemplate('Transparent')
--- QueueStatusFrame:SetFrameStrata('HIGH')
+QueueStatusFrame:StripTextures()
+QueueStatusFrame:SetTemplate('Transparent')
+QueueStatusFrame:SetFrameStrata('HIGH')
 
 local function UpdateLFGTooltip()
 	local position = DuffedUIMinimap:GetPoint()
@@ -92,7 +93,7 @@ QueueStatusFrame:HookScript('OnShow', UpdateLFGTooltip)
 
 Minimap:EnableMouseWheel(true)
 Minimap:SetScript('OnMouseWheel', function(self, d)
-	if d > 0 then _G.MinimapZoomIn:Click() elseif d < 0 then _G.MinimapZoomOut:Click() end
+	if d > 0 then Minimap_ZoomIn() elseif d < 0 then Minimap_ZoomOut() end
 end)
 
 Minimap:SetMaskTexture(C['media']['blank'])
@@ -111,15 +112,25 @@ Minimap:SetScript('OnMouseUp', function(self, btn)
 		LEM:EasyMenu(D['MicroMenu'], DuffedUIMicroButtonsDropDown, 'cursor', xoff, 0, 'MENU', 2)
 	elseif btn == 'RightButton' then
 		if position:match('RIGHT') then xoff = D['Scale'](-8) end
-		ToggleDropDownMenu(nil, nil, MiniMapTrackingDropDown, DuffedUIMinimap, xoff, D['Scale'](-2))
+		ToggleDropDownMenu(nil, nil, MinimapCluster.Tracking.DropDown, DuffedUIMinimap, xoff, D['Scale'](-2))
 	else
-		Minimap_OnClick(self)
+		-- Based on Blizzard Minimap.lua and
+		local x, y = GetCursorPosition()
+		x = x / Minimap:GetEffectiveScale()
+		y = y / Minimap:GetEffectiveScale()
+
+		local cx, cy = Minimap:GetCenter()
+		x = x - cx
+		y = y - cy
+		if ( sqrt(x * x + y * y) < (Minimap:GetWidth() / 2) ) then
+			Minimap:PingLocation(x, y)
+		end
 	end
 end)
 
 Minimap:EnableMouseWheel(true)
 Minimap:SetScript('OnMouseWheel', function(self, delta)
-	if delta > 0 then MinimapZoomIn:Click() elseif delta < 0 then MinimapZoomOut:Click() end
+	if delta > 0 then Minimap_ZoomIn() elseif delta < 0 then Minimap_ZoomOut() end
 end)
 
 local m_coord = CreateFrame('Frame', 'DuffedUIMinimapCoord', DuffedUIMinimap)

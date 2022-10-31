@@ -5,7 +5,7 @@ local move = D['move']
 local ileft = CreateFrame('Frame', 'DuffedUIInfoLeft', UIParent, 'BackdropTemplate')
 ileft:SetTemplate('Default')
 ileft:Size(D['Scale'](D['InfoLeftRightWidth'] - 9), 19)
-ileft:SetPoint('BOTTOMLEFT', UIParent, 'BOTTOMLEFT', 5, 3)
+ileft:SetPoint('BOTTOMLEFT', _G.ChatFrame1, 'BOTTOMLEFT', -5, -25)
 ileft:SetFrameLevel(2)
 ileft:SetFrameStrata('BACKGROUND')
 
@@ -68,8 +68,8 @@ icenter:SetScript('OnMouseDown', OnMouseDown)
 if C['chat']['lbackground'] then
 	local chatleftbg = CreateFrame('Frame', 'DuffedUIChatBackgroundLeft', DuffedUIInfoLeft, 'BackdropTemplate')
 	chatleftbg:SetTemplate('Transparent')
-	chatleftbg:SetSize(D['InfoLeftRightWidth'] + 12, 145)
-	chatleftbg:Point('BOTTOMLEFT', UIParent, 'BOTTOMLEFT', 5, 24)
+	chatleftbg:SetSize(D['InfoLeftRightWidth'] + 12, 149)
+	chatleftbg:Point('BOTTOMLEFT', DuffedUIInfoLeft, 'BOTTOMLEFT', 0, 24)
 	chatleftbg:SetFrameLevel(1)
 
 	local tabsbgleft = CreateFrame('Frame', 'DuffedUITabsLeftBackground', UIParent, 'BackdropTemplate')
@@ -83,7 +83,7 @@ end
 if C['chat']['rbackground'] then
 	local chatrightbg = CreateFrame('Frame', 'DuffedUIChatBackgroundRight', DuffedUIInfoRight, 'BackdropTemplate')
 	chatrightbg:SetTemplate('Transparent')
-	chatrightbg:Size(D['InfoLeftRightWidth'] + 12, 145)
+	chatrightbg:Size(D['InfoLeftRightWidth'] + 12, 149)
 	chatrightbg:Point('BOTTOMRIGHT', UIParent, 'BOTTOMRIGHT', -5, 24)
 	chatrightbg:SetFrameLevel(1)
 

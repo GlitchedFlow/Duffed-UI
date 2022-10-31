@@ -207,7 +207,7 @@ function ab:FixMBBR()
 
 		Button:SetAttribute('showgrid', 1)
 		Button.noGrid = nil
-		--Button:ShowGrid(ACTION_BUTTON_SHOW_GRID_REASON_CVAR)
+		Button:SetShowGrid(true, ACTION_BUTTON_SHOW_GRID_REASON_CVAR)
 		Button:Show()
 	end
 end

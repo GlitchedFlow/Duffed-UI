@@ -55,18 +55,19 @@ local function SetChatStyle(frame)
 	tab.SetAlpha = UIFrameFadeRemoveFrame
 
 	if not C['chat']['lbackground'] and C['chat']['rbackground'] then
-		-- _G[chat..'TabText']:Hide()
-		-- tab:HookScript('OnEnter', function() _G[chat..'TabText']:Show() end)
-		-- tab:HookScript('OnLeave', function() _G[chat..'TabText']:Hide() end)
+		tab:Hide()
+		tab:HookScript('OnEnter', function() tab:Show() end)
+		tab:HookScript('OnLeave', function() tab:Hide() end)
 	end
 
-	
-	-- _G[chat..'TabText']:SetTextColor(unpack(C['media']['datatextcolor1']))
-	-- _G[chat..'TabText'].SetTextColor = D['Dummy']
-	-- _G[chat..'TabText']:SetFont(C['media']['font'], 11)
+	local tabFont = tab:GetFontString()
+	tabFont:SetTextColor(unpack(C['media']['datatextcolor1']))
+	tabFont.SetTextColor = D['Dummy']
+	tabFont:SetFont(C['media']['font'], 11, 'OUTLINE')
+	tab:SetFontString(tabFont)
 	if id == 4 then
-		-- _G[chat..'TabText']:ClearAllPoints()
-		-- _G[chat..'TabText']:SetPoint('CENTER', _G[chat..'Tab'], 0, -4)
+		tab:ClearAllPoints()
+		--tab:SetPoint('CENTER', tab, 0, -4)
 	end
 
 	_G[chat]:SetClampRectInsets(0, 0, 0, 0)
@@ -80,6 +81,8 @@ local function SetChatStyle(frame)
 	_G[chat..'EditBox']:ClearAllPoints()
 	_G[chat..'EditBox']:Point('TOPLEFT', DuffedUIInfoLeft, 2, -2)
 	_G[chat..'EditBox']:Point('BOTTOMRIGHT', DuffedUIInfoLeft, -2, 2)
+
+	_G.ChatFrame1:SetSize(D['InfoLeftRightWidth'] + 8, 120)
 
 	for j = 1, #CHAT_FRAME_TEXTURES do _G[chat..CHAT_FRAME_TEXTURES[j]]:SetTexture(nil) end
 
@@ -114,7 +117,7 @@ local function SetChatStyle(frame)
 	_G[chat..'EditBox']:SetAltArrowKeyMode(false)
 	_G[chat..'EditBox']:Hide()
 	_G[chat..'EditBox']:HookScript('OnEditFocusLost', function(self) self:Hide() end)
-	_G[chat..'Tab']:HookScript('OnClick', function() _G[chat..'EditBox']:Hide() end)
+	tab:HookScript('OnClick', function() _G[chat..'EditBox']:Hide() end)
 
 	_G[chat..'EditBox']:CreateBackdrop()
 	_G[chat..'EditBox'].backdrop:ClearAllPoints()
@@ -208,7 +211,7 @@ D['SetDefaultChatPosition'] = function(frame)
 		if id == 1 then
 			frame:ClearAllPoints()
 			if C['chat']['lbackground'] then
-				frame:Point('BOTTOMLEFT', DuffedUIChatBackgroundLeft, 'BOTTOMLEFT', 3, 3)
+				frame:Point('BOTTOMLEFT', UIParent, 'BOTTOMLEFT', 0, 0)
 			else
 				frame:Point('BOTTOMLEFT', UIParent, 'BOTTOMLEFT', 5, 24)
 			end
