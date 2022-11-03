@@ -407,6 +407,9 @@ D['ConstructUFPlayer'] = function(self)
 	
 	self.panel = panel
 	self.Health = health
+	self.Health.PostUpdateColor = function(unit, r, g, b)
+		self.Health:SetStatusBarColor(unpack(C['unitframes']['healthbarcolor']))
+	end
 	self.Health.bg = healthBG
 	self.Power = power
 	self.Power.bg = powerBG
